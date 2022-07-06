@@ -24,4 +24,12 @@ public class UserUtil {
         return user1;
     }
 
+    public static Integer getUserId() {
+        if (getUser()!=null) {
+            return getUser().getId();
+        } else {
+            return null;
+        }
+    }
+
 }

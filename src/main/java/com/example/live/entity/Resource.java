@@ -3,21 +3,22 @@ package com.example.live.entity;
 import lombok.Data;
 
 /**
- * 后台用户、商户用户
+ * 资源
+ *
  * @author baishuailei@zhejianglab.com
  * @date 2022/7/6
  */
 @Data
-public class User {
+public class Resource {
     private int id;
-    private String name;
+    private String shop;
     private String mobile;
-    private String pwd;
+    // 意向：跟进中、月会员、年会员、已拒绝
+    private String intention;
     private String remark;
 
     // 创建时间
     private String ct;
     // 更新时间
     private String ut;
-
 }
