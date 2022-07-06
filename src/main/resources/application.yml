@@ -1,0 +1,35 @@
+server:
+  port: 8081
+  servlet:
+    session:
+      timeout: 60m
+
+mybatis:
+  # 定义别名包
+  type-aliases-package: com.example.live.entity
+  # 导入映射文件
+  mapper-locations: classpath*:mapper/*.xml
+  check-config-location: true
+  # 开启驼峰映射
+  configuration:
+    map-underscore-to-camel-case: true
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://10.101.116.2:3308/by_live?characterEncoding=utf-8&autoReconnect=true&failOverReadOnly=false&useSSL=false
+    username: root
+    password: 123456
+    dbcp2:
+      #验证连接的有效性
+      test-while-idle: true
+      #验证语句
+      validation-query: SELECT 1
+      #空闲连接回收的时间间隔，与test-while-idle一起使用，设置5分钟
+      time-between-eviction-runs-millis: 300000
+      #连接池空闲连接的有效时间 ，设置30分钟
+      soft-min-evictable-idle-time-millis: 1800000
+
+logging:
+  level:
+    com.zjlab.zkyc.project.mapper: debug
