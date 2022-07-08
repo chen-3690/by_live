@@ -11,25 +11,22 @@ import lombok.Data;
 @Data
 public class Contract {
     private int id;
-    private String mobile;
-    private String shop;
+    // 商户店铺id
+    private int merchantId;
+    // 业务员
     private Integer opeUser;
-    // 权益类型：月卡、季卡、年卡
-    private String buyType;
-    // 合同类型：纸质、电子
-    private String contractType;
-    // 状态：待审核、审核通过、已拒绝、已解除
-    private String status;
+    // 权益类型：月卡-1、季卡-2、年卡-3
+    private int buyType;
+    // 合同类型：纸质-0、电子-1
+    private int contractType;
+    // 当前状态：待审核-0、审核通过-1、审核拒绝-2、已解除-3
+    private int status;
     // 提交时间
     private String ct;
-    // 拒绝时间
-    private String refuseTs;
-    // 拒绝原因
-    private String refuseReason;
-    // 解除时间
-    private String relieveTs;
-    // 解除原因
-    private String relieveReason;
+    // 操作时间
+    private String ut;
+    // 拒绝原因、解除原因
+    private String remark;
     // 合同内容（pdf格式）
     private String content;
 }
