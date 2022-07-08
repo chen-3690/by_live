@@ -12,7 +12,7 @@
     <artifactId>live</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>by_live</name>
-    <description>Demo project for Spring Boot</description>
+    <description>【直播带货管理系统】</description>
     <properties>
         <java.version>1.8</java.version>
     </properties>
@@ -57,11 +57,11 @@
             <version>4.11.21.ALL</version>
         </dependency>
         <!--微信支付-->
-<!--        <dependency>-->
-<!--            <groupId>com.github.binarywang</groupId>-->
-<!--            <artifactId>weixin-java-pay</artifactId>-->
-<!--            <version>3.8.0</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>com.github.binarywang</groupId>
+            <artifactId>weixin-java-pay</artifactId>
+            <version>3.8.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -69,8 +69,27 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>2.7.0</version>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.yml</include>
+                    <include>**/*.xml</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.yml</include>
+                    <include>**/*.xml</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
     </build>
 
 </project>

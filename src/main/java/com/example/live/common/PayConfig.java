@@ -1,6 +1,10 @@
 package com.example.live.common;
 
-public class AlipayConfig {
+public class PayConfig {
+
+    /**
+     * 支付宝
+     */
 
     // 应用ID,您的APPID，收款账号既是您的APPID对应支付宝账号
     public static final String app_id = "2017061907523514";
@@ -25,4 +29,16 @@ public class AlipayConfig {
 
     // 支付宝网关
     public static String gatewayUrl = "https://openapi.alipay.com/gateway.do";
+
+
+    /**
+     * 微信
+     */
+
+    // 服务器异步通知页面路径  需http://格式的完整路径，不能加?id=123这类自定义参数，必须外网可以正常访问
+    public static final String notify_url2 = "";
+
+    // 页面跳转同步通知页面路径 需http://格式的完整路径，不能加?id=123这类自定义参数，必须外网可以正常访问
+    public static final String return_url2 = "";
+
 }

@@ -10,14 +10,23 @@ import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.AlipayTradeAppPayRequest;
 import com.alipay.api.request.AlipayTradePagePayRequest;
 import com.alipay.api.response.AlipayTradeAppPayResponse;
-import com.example.live.common.AlipayConfig;
+import com.example.live.common.PayConfig;
+import com.example.live.common.BaseResult;
 import com.example.live.util.UserUtil;
+import com.github.binarywang.wxpay.bean.notify.WxPayNotifyResponse;
+import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
+import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
+import com.github.binarywang.wxpay.exception.WxPayException;
+import com.github.binarywang.wxpay.service.WxPayService;
+import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,28 +36,36 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.util.*;
 
 
 /**
- * 版本购买
+ * 支付购买
+ * 支付宝、微信
  */
 @Slf4j
 @RestController
 @RequestMapping("/pay")
-public class AlipayController {
+public class PayController {
+
+    @Resource
+    private WxPayService wxService;
 
 
+    /**
+     * 支付宝
+     */
     @RequestMapping("/ali")
-    public void doPost(HttpServletRequest httpRequest, HttpServletResponse httpResponse, Integer months) throws IOException {
-
+    public void aliPay(Integer type, HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws IOException {
         Integer userId = UserUtil.getUserId();
         if (userId ==null) {
-            httpResponse.setContentType("text/html;charset=" + AlipayConfig.charset);
+            httpResponse.setContentType("text/html;charset=" + PayConfig.charset);
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("code", -1001);
-            jsonObject.put("msg", "用户登录状态不可用!");
+            jsonObject.put("status", 200);
+            jsonObject.put("msg", "用户暂未登录");
             httpResponse.getWriter().write(jsonObject.toJSONString());
             httpResponse.getWriter().flush();
             httpResponse.getWriter().close();
@@ -56,8 +73,8 @@ public class AlipayController {
         }
 
         //获得初始化的AlipayClient 向支付宝发送支付请求
-        AlipayClient alipayClient = new DefaultAlipayClient(AlipayConfig.gatewayUrl, AlipayConfig.app_id,
-                AlipayConfig.merchant_private_key, AlipayConstants.FORMAT_JSON, AlipayConfig.charset, AlipayConfig.alipay_public_key, AlipayConfig.sign_type);
+        AlipayClient alipayClient = new DefaultAlipayClient(PayConfig.gatewayUrl, PayConfig.app_id,
+                PayConfig.merchant_private_key, AlipayConstants.FORMAT_JSON, PayConfig.charset, PayConfig.alipay_public_key, PayConfig.sign_type);
 
         // 请求
         String form = "";
@@ -71,30 +88,30 @@ public class AlipayController {
             // 网页端
             AlipayTradePagePayRequest alipayRequest = new AlipayTradePagePayRequest();// 创建API对应的request
             // 同步通知url: 前端路径
-            alipayRequest.setReturnUrl(AlipayConfig.return_url);
+            alipayRequest.setReturnUrl(PayConfig.return_url);
             // 异步通知url: 后台服务接口路径
-            alipayRequest.setNotifyUrl(AlipayConfig.notify_url);
+            alipayRequest.setNotifyUrl(PayConfig.notify_url);
             // 填充业务参数
-            alipayRequest.setBizContent(bizContentBuild(outTradeNo, totalAmount, subject, body+"-"+months+"个月",
-                    sessionId, platform, months));
+            alipayRequest.setBizContent(bizContentBuild(outTradeNo, totalAmount, subject, body,
+                    sessionId, platform, type));
             // 调用SDK生成表单
             form = alipayClient.pageExecute(alipayRequest).getBody();
 
         } catch (AlipayApiException e) {
             e.printStackTrace();
         }
-        httpResponse.setContentType("text/html;charset=" + AlipayConfig.charset);
+        httpResponse.setContentType("text/html;charset=" + PayConfig.charset);
         httpResponse.getWriter().write(form);// 直接将完整的表单html输出到页面
         httpResponse.getWriter().flush();
         httpResponse.getWriter().close();
     }
 
     /**
-     * 异步调用接口
+     * 支付宝异步回调接口
      */
-    @RequestMapping("/notify")
-    public void notifyPay(HttpServletRequest request, HttpServletResponse response) throws AlipayApiException, IOException {
-        Map<String, String> paramsMap = new HashMap<String, String>();
+    @RequestMapping("/notify/ali")
+    public void aliNotifyPay(HttpServletRequest request, HttpServletResponse response) throws AlipayApiException, IOException {
+        Map<String, String> paramsMap = new HashMap<>();
         Enumeration<String> parameterNames = request.getParameterNames();
         while (parameterNames.hasMoreElements()) {
             String name = parameterNames.nextElement();
@@ -104,7 +121,7 @@ public class AlipayController {
         }
 
         PrintWriter out = response.getWriter();
-        boolean signVerified = AlipaySignature.rsaCheckV1(paramsMap, AlipayConfig.alipay_public_key, AlipayConfig.charset, AlipayConfig.sign_type); // 调用SDK验证签名
+        boolean signVerified = AlipaySignature.rsaCheckV1(paramsMap, PayConfig.alipay_public_key, PayConfig.charset, PayConfig.sign_type); // 调用SDK验证签名
 
         String sessionId = request.getSession().getId();
         String trade_no = request.getParameter("trade_no"); // 支付宝交易号
@@ -127,7 +144,7 @@ public class AlipayController {
             out.println("fail");
         }
     }
-
+    // 支付页面构造函数
     private String bizContentBuild(String outTradeNo, String totalAmount, String subject, String body, String sessionId,
                                    String platform, Integer months) {
         StringBuilder str = new StringBuilder();
@@ -167,5 +184,70 @@ public class AlipayController {
         str.append("\" }");
         return str.toString();
     }
+
+
+    /**
+     * 微信
+     */
+    @RequestMapping("/wx")
+    public <T> T wxPay(Integer type, HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws IOException, WxPayException {
+        Integer userId = UserUtil.getUserId();
+        if (userId ==null) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("code", -1001);
+            jsonObject.put("status", 200);
+            jsonObject.put("msg", "用户暂未登录");
+            httpResponse.setContentType("text/html;charset=" + PayConfig.charset);
+            httpResponse.getWriter().write(jsonObject.toJSONString());
+            httpResponse.getWriter().flush();
+            httpResponse.getWriter().close();
+            return (T) new BaseResult<>(httpResponse);
+        }
+
+        // 4位随机数
+        int random = (int)((Math.random()*9+1)*1000);
+        String outTradeNo = "HT-" + type + "-"+ random;
+        String totalAmount = "1";// 付款金额（必填）
+        String subject = "灰豚数据(抖音版)";// 订单名称（必填）
+        String body = null;// 商品描述 （可空）
+
+        // 调用微信支付接口
+        WxPayUnifiedOrderRequest request = new WxPayUnifiedOrderRequest();
+        request.setProductId("1");
+        request.setOutTradeNo(outTradeNo);
+        request.setSpbillCreateIp("122.234.60.79");
+        request.setBody(subject+"-"+body+"个月");
+        request.setDetail(subject+"-"+body+"个月");
+//        // 设置支付过期时间：30分钟
+//        request.setTimeExpire(getOrderExpireTime(30*sec));
+        // 微信支付的金额是不能带小数点的，乘以100提交，因为里面设置参数的时候是以"分"为单位的
+        // 订单金额，单位为分
+        request.setTotalFee((int) (NumberUtils.toFloat(totalAmount) * 100));
+        request.setNotifyUrl(PayConfig.notify_url2);//线上回调地址
+        request.setAttach(httpRequest.getSession().getId());//附加数据sessionId
+        request.setTradeType("NATIVE"); //网页支付
+
+        Object codeUrl = this.wxService.createOrder(request);
+        Map<String, Object> map = Maps.newHashMap();
+        map.put("codeUrl", codeUrl);
+        map.put("orderNo", outTradeNo);
+        return (T) new BaseResult<>(map);
+    }
+
+    /**
+     * 微信异步回调接口
+     */
+    @PostMapping("/notify/wx")
+    public String wxNotifyPay(@RequestBody String xmlData) throws WxPayException {
+        final WxPayOrderNotifyResult notifyResult = this.wxService.parseOrderNotifyResult(xmlData);
+
+        String trade_no = notifyResult.getTransactionId(); // 交易号
+        String order_no = notifyResult.getOutTradeNo(); // 获取订单号
+        long total_fee = (long) notifyResult.getTotalFee() / 100; // 用户支付金额
+        String attach = notifyResult.getAttach(); // 交易状态
+
+        return WxPayNotifyResponse.success("支付成功");
+    }
+
 
 }

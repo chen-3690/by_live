@@ -32,4 +32,4 @@ spring:
 
 logging:
   level:
-    com.zjlab.zkyc.project.mapper: debug
+    com.example.live.mapper: debug
