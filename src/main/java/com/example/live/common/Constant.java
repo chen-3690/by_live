@@ -10,8 +10,10 @@ import java.util.Map;
  * @date 2022/07/06
  */
 public class Constant {
-    // 系统超级管理员user_id=10
-    public static final int admin_id = 10;
+
+    // 超级管理员user_id=11
+    public static final int admin_id = 11;
+
     public static final String session_user = "user";
 
     // 商品链接：3545396053325007934

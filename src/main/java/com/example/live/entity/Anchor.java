@@ -1,6 +1,9 @@
 package com.example.live.entity;
 
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.metadata.BaseRowModel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 主播
@@ -9,9 +12,12 @@ import lombok.Data;
  * @date 2022/7/8 22:23
  */
 @Data
-public class Anchor {
+@EqualsAndHashCode(callSuper = true)
+public class Anchor extends BaseRowModel {
+    @ExcelProperty(value = "序号",index = 0)
     private int id;
     // 昵称
+    @ExcelProperty(value = "昵称",index = 1)
     private String nickname;
     // 头像
     private String img;

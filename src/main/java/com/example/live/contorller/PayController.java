@@ -5,39 +5,37 @@ import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.AlipayConstants;
 import com.alipay.api.DefaultAlipayClient;
-import com.alipay.api.domain.AlipayTradeAppPayModel;
 import com.alipay.api.internal.util.AlipaySignature;
-import com.alipay.api.request.AlipayTradeAppPayRequest;
 import com.alipay.api.request.AlipayTradePagePayRequest;
-import com.alipay.api.response.AlipayTradeAppPayResponse;
 import com.example.live.common.PayConfig;
 import com.example.live.common.BaseResult;
+import com.example.live.entity.UserPayConfig;
+import com.example.live.mapper.UserPayConfigMapper;
 import com.example.live.util.UserUtil;
 import com.github.binarywang.wxpay.bean.notify.WxPayNotifyResponse;
 import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
 import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
+import com.github.binarywang.wxpay.config.WxPayConfig;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
+import com.github.binarywang.wxpay.service.impl.WxPayServiceImpl;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Controller;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
 import java.util.*;
 
 
@@ -52,6 +50,8 @@ public class PayController {
 
     @Resource
     private WxPayService wxService;
+    @Autowired
+    private UserPayConfigMapper userPayConfigMapper;
 
 
     /**
@@ -227,6 +227,7 @@ public class PayController {
         request.setAttach(httpRequest.getSession().getId());//附加数据sessionId
         request.setTradeType("NATIVE"); //网页支付
 
+        this.wxService.setConfig(wxPayConfig());
         Object codeUrl = this.wxService.createOrder(request);
         Map<String, Object> map = Maps.newHashMap();
         map.put("codeUrl", codeUrl);
@@ -239,6 +240,8 @@ public class PayController {
      */
     @PostMapping("/notify/wx")
     public String wxNotifyPay(@RequestBody String xmlData) throws WxPayException {
+        this.wxService.setConfig(wxPayConfig());
+
         final WxPayOrderNotifyResult notifyResult = this.wxService.parseOrderNotifyResult(xmlData);
 
         String trade_no = notifyResult.getTransactionId(); // 交易号
@@ -247,6 +250,27 @@ public class PayController {
         String attach = notifyResult.getAttach(); // 交易状态
 
         return WxPayNotifyResponse.success("支付成功");
+    }
+
+    // 自定义构造支付参数
+    public WxPayConfig wxPayConfig() {
+        Integer loginUserId = UserUtil.getUserId();
+
+        // loginUserId -> agency_user_id
+        UserPayConfig payConfig = userPayConfigMapper.getConfig(loginUserId);
+        if (payConfig==null) {
+            // 支付参数无效
+            return null;
+        }
+        WxPayConfig config = new WxPayConfig();
+        config.setAppId(StringUtils.trimToNull(payConfig.getWxAppId()));
+        config.setMchId(StringUtils.trimToNull(payConfig.getWxMchId()));
+        config.setMchKey(StringUtils.trimToNull(payConfig.getWxMchKey()));
+        // 支付证书（考虑下如何存储和读取）
+        config.setKeyPath(StringUtils.trimToNull(payConfig.getWxKeyPath()));
+        // 可以指定是否使用沙箱环境
+        config.setUseSandboxEnv(false);
+        return config;
     }
 
 
