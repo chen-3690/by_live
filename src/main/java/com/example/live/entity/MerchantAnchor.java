@@ -15,4 +15,5 @@ public class MerchantAnchor {
     private int merchantId;
     // 主播id
     private int anchorId;
+    private String ts;
 }

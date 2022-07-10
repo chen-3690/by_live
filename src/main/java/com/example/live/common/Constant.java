@@ -16,6 +16,10 @@ public class Constant {
 
     public static final String session_user = "user";
 
+    public static final String split = ",";
+    // 发送邮件主题
+    public static final String email_subject = "开票信息";
+
     // 商品链接：3545396053325007934
     public static final String goods_url = "https://haohuo.jinritemai.com/views/product/detail?id=";
     // 店铺链接：13939925088

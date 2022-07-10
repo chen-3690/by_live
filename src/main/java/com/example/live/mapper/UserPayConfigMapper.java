@@ -1,6 +1,6 @@
 package com.example.live.mapper;
 
-import com.example.live.entity.UserPayConfig;
+import com.example.live.entity.PayConfig;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -11,6 +11,6 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface UserPayConfigMapper {
 
-    UserPayConfig getConfig(@Param("userId") int userId);
+    PayConfig getConfig(@Param("userId") int userId);
 
 }

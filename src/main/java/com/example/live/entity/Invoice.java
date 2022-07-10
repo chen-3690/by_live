@@ -12,7 +12,7 @@ import lombok.Data;
 public class Invoice {
     private int id;
     // 商家店铺id
-    private int merchantId;
+    private Integer merchantId;
     // 业务员
     private Integer opeUser;
     // 发票金额
@@ -23,14 +23,12 @@ public class Invoice {
     private String company;
     // 纳税识别号
     private String tax;
-    // 发票地址（邮箱）
-    private String location;
-    // 发票类型：纸质-0、电子-1
-    private int type;
+    // 电子邮箱
+    private String email;
     // 备注
     private String remark;
     // 申请时间
-    private String applyTs;
+    private String ct;
     // 操作时间
-    private String opeTs;
+    private String ut;
 }

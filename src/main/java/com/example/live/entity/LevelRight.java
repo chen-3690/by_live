@@ -13,5 +13,6 @@ public class LevelRight {
     private int id;
     // 等级：超级管理员-1、管理员（代理）-2、业务员-3
     private int level;
+    // 权限
     private String path;
 }

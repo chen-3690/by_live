@@ -21,10 +21,19 @@ public class Merchant {
     private String shop;
     // 商品链接
     private String goods;
+    // 商家介绍（<140字）
+    private String introduce;
     // 业务员
     private Integer opeUser;
-    // 创建时间
-    private String ct;
+    // 店铺状态：未认证、已认证、购买等级（月卡、季卡、年卡）
+    private String shopStatus;
+    // 会员剩余天数（<7天标红）
+    private Integer days;
+    // 登录次数
+    private Integer loginCount;
     // 登录时间
     private String lt;
+    // 创建时间
+    private String ct;
+
 }

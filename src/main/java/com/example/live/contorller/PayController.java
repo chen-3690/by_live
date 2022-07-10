@@ -7,9 +7,8 @@ import com.alipay.api.AlipayConstants;
 import com.alipay.api.DefaultAlipayClient;
 import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.AlipayTradePagePayRequest;
-import com.example.live.common.PayConfig;
 import com.example.live.common.BaseResult;
-import com.example.live.entity.UserPayConfig;
+import com.example.live.entity.PayConfig;
 import com.example.live.mapper.UserPayConfigMapper;
 import com.example.live.util.UserUtil;
 import com.github.binarywang.wxpay.bean.notify.WxPayNotifyResponse;
@@ -18,14 +17,11 @@ import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
 import com.github.binarywang.wxpay.config.WxPayConfig;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
-import com.github.binarywang.wxpay.service.impl.WxPayServiceImpl;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -61,7 +57,7 @@ public class PayController {
     public void aliPay(Integer type, HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws IOException {
         Integer userId = UserUtil.getUserId();
         if (userId ==null) {
-            httpResponse.setContentType("text/html;charset=" + PayConfig.charset);
+            httpResponse.setContentType("text/html;charset=" + com.example.live.common.PayConfig.charset);
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("code", -1001);
             jsonObject.put("status", 200);
@@ -73,8 +69,8 @@ public class PayController {
         }
 
         //获得初始化的AlipayClient 向支付宝发送支付请求
-        AlipayClient alipayClient = new DefaultAlipayClient(PayConfig.gatewayUrl, PayConfig.app_id,
-                PayConfig.merchant_private_key, AlipayConstants.FORMAT_JSON, PayConfig.charset, PayConfig.alipay_public_key, PayConfig.sign_type);
+        AlipayClient alipayClient = new DefaultAlipayClient(com.example.live.common.PayConfig.gatewayUrl, com.example.live.common.PayConfig.app_id,
+                com.example.live.common.PayConfig.merchant_private_key, AlipayConstants.FORMAT_JSON, com.example.live.common.PayConfig.charset, com.example.live.common.PayConfig.alipay_public_key, com.example.live.common.PayConfig.sign_type);
 
         // 请求
         String form = "";
@@ -88,9 +84,9 @@ public class PayController {
             // 网页端
             AlipayTradePagePayRequest alipayRequest = new AlipayTradePagePayRequest();// 创建API对应的request
             // 同步通知url: 前端路径
-            alipayRequest.setReturnUrl(PayConfig.return_url);
+            alipayRequest.setReturnUrl(com.example.live.common.PayConfig.return_url);
             // 异步通知url: 后台服务接口路径
-            alipayRequest.setNotifyUrl(PayConfig.notify_url);
+            alipayRequest.setNotifyUrl(com.example.live.common.PayConfig.notify_url);
             // 填充业务参数
             alipayRequest.setBizContent(bizContentBuild(outTradeNo, totalAmount, subject, body,
                     sessionId, platform, type));
@@ -100,7 +96,7 @@ public class PayController {
         } catch (AlipayApiException e) {
             e.printStackTrace();
         }
-        httpResponse.setContentType("text/html;charset=" + PayConfig.charset);
+        httpResponse.setContentType("text/html;charset=" + com.example.live.common.PayConfig.charset);
         httpResponse.getWriter().write(form);// 直接将完整的表单html输出到页面
         httpResponse.getWriter().flush();
         httpResponse.getWriter().close();
@@ -121,7 +117,7 @@ public class PayController {
         }
 
         PrintWriter out = response.getWriter();
-        boolean signVerified = AlipaySignature.rsaCheckV1(paramsMap, PayConfig.alipay_public_key, PayConfig.charset, PayConfig.sign_type); // 调用SDK验证签名
+        boolean signVerified = AlipaySignature.rsaCheckV1(paramsMap, com.example.live.common.PayConfig.alipay_public_key, com.example.live.common.PayConfig.charset, com.example.live.common.PayConfig.sign_type); // 调用SDK验证签名
 
         String sessionId = request.getSession().getId();
         String trade_no = request.getParameter("trade_no"); // 支付宝交易号
@@ -197,7 +193,7 @@ public class PayController {
             jsonObject.put("code", -1001);
             jsonObject.put("status", 200);
             jsonObject.put("msg", "用户暂未登录");
-            httpResponse.setContentType("text/html;charset=" + PayConfig.charset);
+            httpResponse.setContentType("text/html;charset=" + com.example.live.common.PayConfig.charset);
             httpResponse.getWriter().write(jsonObject.toJSONString());
             httpResponse.getWriter().flush();
             httpResponse.getWriter().close();
@@ -223,7 +219,7 @@ public class PayController {
         // 微信支付的金额是不能带小数点的，乘以100提交，因为里面设置参数的时候是以"分"为单位的
         // 订单金额，单位为分
         request.setTotalFee((int) (NumberUtils.toFloat(totalAmount) * 100));
-        request.setNotifyUrl(PayConfig.notify_url2);//线上回调地址
+        request.setNotifyUrl(com.example.live.common.PayConfig.notify_url2);//线上回调地址
         request.setAttach(httpRequest.getSession().getId());//附加数据sessionId
         request.setTradeType("NATIVE"); //网页支付
 
@@ -257,7 +253,7 @@ public class PayController {
         Integer loginUserId = UserUtil.getUserId();
 
         // loginUserId -> agency_user_id
-        UserPayConfig payConfig = userPayConfigMapper.getConfig(loginUserId);
+        PayConfig payConfig = userPayConfigMapper.getConfig(loginUserId);
         if (payConfig==null) {
             // 支付参数无效
             return null;

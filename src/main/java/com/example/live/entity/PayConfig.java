@@ -9,10 +9,10 @@ import lombok.Data;
  * @date 2022/7/9 15:16
  */
 @Data
-public class UserPayConfig {
+public class PayConfig {
     private int id;
     // 对应每个管理员（代理商）支付信息
-    private int payUser;
+    private Integer agentUser;
     // 支付宝支付，appid
     private String aliAppId;
     // 支付宝支付，私钥

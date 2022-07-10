@@ -9,9 +9,9 @@ import lombok.Data;
  * @date 2022/7/6
  */
 @Data
-public class MerchantOrder {
+public class Order {
     private int id;
-    // 订单号
+    // 订单号（yyyyMMddHHmm+4位随机数）
     private String orderNo;
     // 交易号
     private String tradeNo;
