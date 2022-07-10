@@ -35,7 +35,7 @@ public class MailUtil {
         Thread thread = new Thread(() -> {
             System.out.println("#jo: " + jo);
 
-            String con = configurationMapper.getConfigStr(agentUser, 1);
+            String con = configurationMapper.getConfigStr(agentUser);
             if (StringUtils.isBlank(con)) {
                 System.out.println("##邮箱地址为空, agentUser:"+agentUser);
                 return;

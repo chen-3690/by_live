@@ -9,7 +9,7 @@ import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.AlipayTradePagePayRequest;
 import com.example.live.common.BaseResult;
 import com.example.live.entity.PayConfig;
-import com.example.live.mapper.UserPayConfigMapper;
+import com.example.live.mapper.PayConfigMapper;
 import com.example.live.util.UserUtil;
 import com.github.binarywang.wxpay.bean.notify.WxPayNotifyResponse;
 import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
@@ -47,7 +47,7 @@ public class PayController {
     @Resource
     private WxPayService wxService;
     @Autowired
-    private UserPayConfigMapper userPayConfigMapper;
+    private PayConfigMapper payConfigMapper;
 
 
     /**
@@ -253,7 +253,7 @@ public class PayController {
         Integer loginUserId = UserUtil.getUserId();
 
         // loginUserId -> agency_user_id
-        PayConfig payConfig = userPayConfigMapper.getConfig(loginUserId);
+        PayConfig payConfig = payConfigMapper.getConfig(loginUserId);
         if (payConfig==null) {
             // 支付参数无效
             return null;

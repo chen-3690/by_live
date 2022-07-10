@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
  * @date 2022/7/9 15:28
  */
 @Mapper
-public interface UserPayConfigMapper {
+public interface PayConfigMapper {
 
     PayConfig getConfig(@Param("userId") int userId);
 

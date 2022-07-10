@@ -17,6 +17,7 @@ public class Constant {
     public static final String session_user = "user";
 
     public static final String split = ",";
+    public static final String split2 = ";";
     // 发送邮件主题
     public static final String email_subject = "开票信息";
 

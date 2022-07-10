@@ -12,7 +12,7 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface ConfigurationMapper {
 
-    @Select("SELECT `content` FROM configuration WHERE agent_user=#{agentUser} AND type=#{type}")
-    String  getConfigStr(@Param("agentUser") Integer agentUser, @Param("type") int type);
+    @Select("SELECT `content` FROM configuration WHERE agent_user=#{agentUser}")
+    String  getConfigStr(@Param("agentUser") Integer agentUser);
 
 }
